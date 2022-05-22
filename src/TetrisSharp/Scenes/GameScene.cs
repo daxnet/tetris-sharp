@@ -18,33 +18,41 @@ namespace TetrisSharp.Scenes
 {
     internal sealed class GameScene : Scene, IGameScene
     {
-        private const string ScoreTextPattern = "Rows Removed: {0}";
         private const float KeyDelay = 0.08F;
+        private const string LevelTextPattern = "Level: {0}";
+        private const string RowsRemovedTextPattern = "Rows Removed: {0}";
+        private const string TotalScoreTextPattern = "Total Score: {0}";
+        private static readonly Random _random = new(DateTime.Now.Millisecond);
         private readonly BlockGenerator _blockGenerator = new();
-        private readonly TimeSpan _fallingInterval = TimeSpan.FromMilliseconds(500);
         private readonly GameBoard _gameBoard = new(Constants.NumberOfTilesX, Constants.NumberOfTilesY);
+        private readonly Queue<int> _tetrisQueue = new();
         private readonly Texture2D[] _tileTextures = new Texture2D[Constants.TileTextureCount];
         private BackgroundMusic _bgm;
         private SoundEffect _bgmEffect;
         private Block _block;
         private Sound _collisionSound;
         private SoundEffect _collisionSoundEffect;
+        private TimeSpan _fallingInterval = TimeSpan.FromMilliseconds(1000);
         private TimeSpan _fallingTimeCounter = TimeSpan.Zero;
         private int _fixedTileSize;
         private Texture2D _fixedTileTexture;
+        private SpriteFont _font;
         private Texture2D _gameBoardTexture;
         private Sound _gameoverSound;
         private SoundEffect _gameoverSoundEffect;
+        private bool _isGameOver = false;
+        private Text _labelNextBlock;
+        private int _level = 1;
+        private Text _levelText;
+        private Block _nextBlock;
         private Sound _rowRemovingSound;
         private SoundEffect _rowRemovingSoundEffect;
+        private int _rowsRemoved;
+        private Text _rowsRemovedText;
         private Texture2D _scoreBoardTexture;
         private float _timeSinceLastKeyPress = 0;
-        private bool _isGameOver = false;
-        private Text _scoreText;
-        private SpriteFont _font;
-        private int _score;
-
-
+        private int _totalScore;
+        private Text _totalScoreText;
         public GameScene(IOvowGame game)
             : base(game)
         {
@@ -59,7 +67,7 @@ namespace TetrisSharp.Scenes
             spriteBatch.Draw(_gameBoardTexture, new Vector2(0, 0), Color.White);
             spriteBatch.Draw(_scoreBoardTexture, new Vector2(25 * Constants.NumberOfTilesX, 0), Color.White);
 
-            // Draw block
+            // Draw gameboard
             for (var boardY = 0; boardY < Constants.NumberOfTilesY; boardY++)
             {
                 for (var boardX = 0; boardX < Constants.NumberOfTilesX; boardX++)
@@ -90,12 +98,31 @@ namespace TetrisSharp.Scenes
         {
             _font = contentManager.Load<SpriteFont>("fonts\\tetris");
 
-            _scoreText = new Text(string.Format(ScoreTextPattern, _score), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 5))
+            _labelNextBlock = new Text("Next block:", this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 10))
             {
                 CollisionDetective = false
             };
 
-            Add(_scoreText);
+            _rowsRemovedText = new Text(string.Format(RowsRemovedTextPattern, _rowsRemoved), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 5 * 25))
+            {
+                CollisionDetective = false
+            };
+
+            _totalScoreText = new Text(string.Format(TotalScoreTextPattern, _totalScore), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 6 * 25))
+            {
+                CollisionDetective = false
+            };
+
+            _levelText = new Text(string.Format(LevelTextPattern, _level), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 7 * 25))
+            {
+                CollisionDetective = false
+            };
+
+
+            Add(_labelNextBlock);
+            Add(_rowsRemovedText);
+            Add(_totalScoreText);
+            Add(_levelText);
 
             _gameBoardTexture = new Texture2D(Game.GraphicsDevice, 25 * Constants.NumberOfTilesX, 25 * Constants.NumberOfTilesY);
             var gameBoardColorData = new Color[25 * Constants.NumberOfTilesX * 25 * Constants.NumberOfTilesY];
@@ -132,8 +159,10 @@ namespace TetrisSharp.Scenes
             _fixedTileTexture = contentManager.Load<Texture2D>($"textures\\tile_fixed");
             _fixedTileSize = _fixedTileTexture.Width;
 
-            _block = _blockGenerator.CreateBlock(this, _tileTextures);
-            Add(_block);
+            _tetrisQueue.Enqueue(_random.Next(_blockGenerator.BlockDefinitions.Definitions.Count));
+            _tetrisQueue.Enqueue(_random.Next(_blockGenerator.BlockDefinitions.Definitions.Count));
+
+            AddBlockToBoard();
         }
 
         public override void Update(GameTime gameTime)
@@ -180,7 +209,9 @@ namespace TetrisSharp.Scenes
                 _timeSinceLastKeyPress = 0;
             }
 
-            _scoreText.Value = string.Format(ScoreTextPattern, _score);
+            _rowsRemovedText.Value = string.Format(RowsRemovedTextPattern, _rowsRemoved);
+            _totalScoreText.Value = string.Format(TotalScoreTextPattern, _totalScore);
+            _levelText.Value = string.Format(LevelTextPattern, _level);
         }
 
         protected override void Dispose(bool disposing)
@@ -209,6 +240,30 @@ namespace TetrisSharp.Scenes
             }
         }
 
+        private void AddBlockToBoard()
+        {
+            if (_nextBlock != null)
+            {
+                Remove(_nextBlock);
+            }
+
+            var index = _tetrisQueue.Dequeue();
+            _block = _blockGenerator.CreateBlock(this, _tileTextures, index: index);
+            Add(_block);
+
+            var nextIndex = _tetrisQueue.Peek();
+            _nextBlock = _blockGenerator.CreateBlock(this, _tileTextures, nextIndex, Constants.NumberOfTilesX + 1, 2);
+            Add(_nextBlock);
+
+            if (_block.CollisionsWithBoard())
+            {
+                _bgm.Stop();
+                _gameoverSound.Play();
+                _isGameOver = true;
+            }
+
+            _tetrisQueue.Enqueue(_random.Next(_blockGenerator.BlockDefinitions.Definitions.Count));
+        }
         private void CheckCollision()
         {
             if (_block.CollisionsWithBoard())
@@ -223,18 +278,31 @@ namespace TetrisSharp.Scenes
                     _rowRemovingSound.Play();
                 });
 
-                _score += rows;
-
-                Remove(_block);
-                _block = _blockGenerator.CreateBlock(this, _tileTextures);
-                if (_block.CollisionsWithBoard())
+                _rowsRemoved += rows;
+                _totalScore += rows switch
                 {
-                    _bgm.Stop();
-                    _gameoverSound.Play();
-                    _isGameOver = true;
+                    1 => 10,
+                    2 => 20,
+                    3 => 50,
+                    4 => 100,
+                    _ => 0
+                };
+
+                if (_rowsRemoved > 0)
+                {
+                    _level = _rowsRemoved / 30 + 1;
+                    var fallingIntervalMillsec = 1000 - (_level - 1) * 50;
+                    if (fallingIntervalMillsec <= 50)
+                    {
+                        fallingIntervalMillsec = 50;
+                    }
+
+                    _fallingInterval = TimeSpan.FromMilliseconds(fallingIntervalMillsec);
                 }
 
-                Add(_block);
+                Remove(_block);
+
+                AddBlockToBoard();
             }
         }
     }

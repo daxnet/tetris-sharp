@@ -33,5 +33,7 @@ namespace TetrisSharp.Sprites
             {
                 CollisionDetective = false
             };
+
+        public BlockDefinitions BlockDefinitions => _blockDefinitions;
     }
 }
