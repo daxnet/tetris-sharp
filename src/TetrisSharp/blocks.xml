@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tetris-blocks>
+	<blocks>
+		<block>
+			<name>L</name>
+			<rotations>
+				<rotation>
+					<definition>100 111</definition>
+				</rotation>
+				<rotation>
+					<definition>01 01 11</definition>
+				</rotation>
+				<rotation>
+					<definition>111 001</definition>
+				</rotation>
+				<rotation>
+					<definition>11 10 10</definition>
+				</rotation>
+			</rotations>
+		</block>
+		<block>
+			<name>Reversed L</name>
+			<rotations>
+				<rotation>
+					<definition>001 111</definition>
+				</rotation>
+				<rotation>
+					<definition>11 01 01</definition>
+				</rotation>
+				<rotation>
+					<definition>111 100</definition>
+				</rotation>
+				<rotation>
+					<definition>10 10 11</definition>
+				</rotation>
+			</rotations>
+		</block>
+		<block>
+			<name>T</name>
+			<rotations>
+				<rotation>
+					<definition>111 010</definition>
+				</rotation>
+				<rotation>
+					<definition>10 11 10</definition>
+				</rotation>
+				<rotation>
+					<definition>010 111</definition>
+				</rotation>
+				<rotation>
+					<definition>01 11 01</definition>
+				</rotation>
+			</rotations>
+		</block>
+		<block>
+			<name>Z</name>
+			<rotations>
+				<rotation>
+					<definition>110 011</definition>
+				</rotation>
+				<rotation>
+					<definition>01 11 10</definition>
+				</rotation>
+			</rotations>
+		</block>
+		<block>
+			<name>Reversed Z</name>
+			<rotations>
+				<rotation>
+					<definition>011 110</definition>
+				</rotation>
+				<rotation>
+					<definition>10 11 01</definition>
+				</rotation>
+			</rotations>
+		</block>
+		<block>
+			<name>Pipe</name>
+			<rotations>
+				<rotation>
+					<definition>1111</definition>
+				</rotation>
+				<rotation>
+					<definition>1 1 1 1</definition>
+				</rotation>
+			</rotations>
+		</block>
+		<block>
+			<name>Square</name>
+			<rotations>
+				<rotation>
+					<definition>11 11</definition>
+				</rotation>
+			</rotations>
+		</block>
+		<!--<block>
+			<name>Cross</name>
+			<rotations>
+				<rotation>
+					<definition>010 111 010</definition>
+				</rotation>
+			</rotations>
+		</block>-->
+	</blocks>
+</tetris-blocks>
