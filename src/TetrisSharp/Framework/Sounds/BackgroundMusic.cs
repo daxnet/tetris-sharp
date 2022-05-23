@@ -137,6 +137,29 @@ namespace TetrisSharp.Framework.Sounds
             }
         }
 
+        public SoundState State
+        {
+            get
+            {
+                if (musicEffectInstance != null && !musicEffectInstance.IsDisposed)
+                {
+                    return musicEffectInstance.State;
+                }
+
+                return SoundState.Stopped;
+            }
+        }
+
+        public void Pause()
+        {
+            musicEffectInstance.Pause();
+        }
+
+        public void Resume()
+        {
+            musicEffectInstance.Resume();
+        }
+
         #endregion Private Methods
     }
 }

@@ -20,8 +20,8 @@ namespace TetrisSharp.Scenes
     {
         private const float KeyDelay = 0.08F;
         private const string LevelTextPattern = "Level: {0}";
-        private const string RowsRemovedTextPattern = "Rows Removed: {0}";
-        private const string TotalScoreTextPattern = "Total Score: {0}";
+        private const string RowsRemovedTextPattern = "Rows removed: {0}";
+        private const string TotalScoreTextPattern = "Total score: {0}";
         private static readonly Random _random = new(DateTime.Now.Millisecond);
         private readonly BlockGenerator _blockGenerator = new();
         private readonly GameBoard _gameBoard = new(Constants.NumberOfTilesX, Constants.NumberOfTilesY);
@@ -44,6 +44,8 @@ namespace TetrisSharp.Scenes
         private Text _labelNextBlock;
         private int _level = 1;
         private Text _levelText;
+        private Sound _levelUpSound;
+        private SoundEffect _levelUpSoundEffect;
         private Block _nextBlock;
         private Sound _rowRemovingSound;
         private SoundEffect _rowRemovingSoundEffect;
@@ -148,7 +150,10 @@ namespace TetrisSharp.Scenes
             _collisionSound = new(_collisionSoundEffect, 0.1F);
 
             _gameoverSoundEffect = contentManager.Load<SoundEffect>("sounds\\gameover");
-            _gameoverSound = new(_gameoverSoundEffect, 0.2F);
+            _gameoverSound = new(_gameoverSoundEffect, 0.1F);
+
+            _levelUpSoundEffect = contentManager.Load<SoundEffect>("sounds\\levelup");
+            _levelUpSound = new(_levelUpSoundEffect, 0.1F);
 
             _blockGenerator.LoadFromFile("blocks.xml");
             for (var i = 0; i < Constants.TileTextureCount; i++)
@@ -212,6 +217,11 @@ namespace TetrisSharp.Scenes
             _rowsRemovedText.Value = string.Format(RowsRemovedTextPattern, _rowsRemoved);
             _totalScoreText.Value = string.Format(TotalScoreTextPattern, _totalScore);
             _levelText.Value = string.Format(LevelTextPattern, _level);
+
+            if (_levelUpSound.State == SoundState.Stopped && _bgm.State == SoundState.Paused)
+            {
+                _bgm.Resume();
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -229,10 +239,13 @@ namespace TetrisSharp.Scenes
                 _gameBoardTexture.Dispose();
                 _scoreBoardTexture.Dispose();
 
+                _levelUpSound.Stop();
                 _collisionSound.Stop();
                 _rowRemovingSound.Stop();
                 _gameoverSound.Stop();
                 _bgm.Stop();
+
+                _levelUpSoundEffect.Dispose();
                 _collisionSoundEffect.Dispose();
                 _rowRemovingSoundEffect.Dispose();
                 _gameoverSoundEffect.Dispose();
@@ -290,14 +303,20 @@ namespace TetrisSharp.Scenes
 
                 if (_rowsRemoved > 0)
                 {
-                    _level = _rowsRemoved / 30 + 1;
-                    var fallingIntervalMillsec = 1000 - (_level - 1) * 50;
-                    if (fallingIntervalMillsec <= 50)
+                    var calculatedLevel = _rowsRemoved / Constants.RowsForLevelUp + 1;
+                    if (calculatedLevel > _level)
                     {
-                        fallingIntervalMillsec = 50;
-                    }
+                        _level = calculatedLevel;
+                        _bgm.Pause();
+                        _levelUpSound.Play();
+                        var fallingIntervalMillsec = 1000 - (_level - 1) * 50;
+                        if (fallingIntervalMillsec <= 50)
+                        {
+                            fallingIntervalMillsec = 50;
+                        }
 
-                    _fallingInterval = TimeSpan.FromMilliseconds(fallingIntervalMillsec);
+                        _fallingInterval = TimeSpan.FromMilliseconds(fallingIntervalMillsec);
+                    }
                 }
 
                 Remove(_block);

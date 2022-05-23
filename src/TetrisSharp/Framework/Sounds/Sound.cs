@@ -70,6 +70,19 @@ namespace TetrisSharp.Framework.Sounds
             }
         }
 
+        public SoundState State
+        {
+            get
+            {
+                if (soundEffectInstance != null && !soundEffectInstance.IsDisposed)
+                {
+                    return soundEffectInstance.State;
+                }
+
+                return SoundState.Stopped;
+            }
+        }
+
         /// <summary>
         /// Stops playing the sound.
         /// </summary>
