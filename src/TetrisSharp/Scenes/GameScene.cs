@@ -25,6 +25,7 @@ namespace TetrisSharp.Scenes
         private static readonly Random _random = new(DateTime.Now.Millisecond);
         private readonly BlockGenerator _blockGenerator = new();
         private readonly GameBoard _gameBoard = new(Constants.NumberOfTilesX, Constants.NumberOfTilesY);
+        private readonly KeyPress _keyJ = new(Keys.J);
         private readonly Queue<int> _tetrisQueue = new();
         private readonly Texture2D[] _tileTextures = new Texture2D[Constants.TileTextureCount];
         private BackgroundMusic _bgm;
@@ -172,6 +173,8 @@ namespace TetrisSharp.Scenes
 
         public override void Update(GameTime gameTime)
         {
+            KeyPress.Update();
+
             base.Update(gameTime);
 
             if (_isGameOver)
@@ -206,12 +209,13 @@ namespace TetrisSharp.Scenes
                     _block.Y++;
 
                 }
-                else if (Keyboard.GetState().IsKeyDown(Keys.J))
-                {
-                    _block.Rotate();
-                }
 
                 _timeSinceLastKeyPress = 0;
+            }
+
+            if (_keyJ.IsPressed)
+            {
+                _block.Rotate();
             }
 
             _rowsRemovedText.Value = string.Format(RowsRemovedTextPattern, _rowsRemoved);
