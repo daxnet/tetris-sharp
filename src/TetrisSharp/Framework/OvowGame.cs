@@ -60,11 +60,6 @@ namespace TetrisSharp.Framework
             this.windowSettings = windowSettings;
             Content.RootDirectory = "Content";
 
-            if (!string.IsNullOrEmpty(windowSettings.Title))
-            {
-                this.Window.Title = windowSettings.Title;
-            }
-
             this.MessageDispatcher.RegisterHandler<SceneEndedMessage>((publisher, message) =>
             {
                 lock (sync)
@@ -155,6 +150,11 @@ namespace TetrisSharp.Framework
 
         protected override void Initialize()
         {
+            if (!string.IsNullOrEmpty(windowSettings.Title))
+            {
+                this.Window.Title = windowSettings.Title;
+            }
+
             if (this.scenes?.Count == 0 || this.ActiveScene == null)
             {
                 throw new InvalidOperationException("No active scene has been defined.");

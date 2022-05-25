@@ -20,5 +20,7 @@ namespace TetrisSharp.Framework
         void Draw(GameTime gameTime, SpriteBatch spriteBatch);
 
         bool CollisionDetective { get; }
+
+        int Layer { get; set; }
     }
 }

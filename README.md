@@ -21,3 +21,13 @@ dotnet build
 cd src/TetrisSharp
 dotnet publish -c Release -o published -r win-x64
 ```
+
+## Controls
+- Moving left: <kbd>A</kbd>
+- Moving right: <kbd>D</kbd>
+- Moving down: <kbd>S</kbd>
+- Rotate block: <kbd>J</kbd>
+- Pause: <kbd>Enter</kbd>
+
+## About BGM
+The background music was from the artist [GMRemix](https://music.163.com/#/artist?id=29811373). No commercial use.

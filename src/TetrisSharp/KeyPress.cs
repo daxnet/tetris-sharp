@@ -1,41 +1,45 @@
 ﻿using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace TetrisSharp
 {
     public class KeyPress
     {
-        public KeyPress(Keys Key)
+        private static KeyboardState _state;
+
+        private readonly Keys _key;
+        private bool _isHeld;
+
+        public KeyPress(Keys key)
         {
-            key = Key;
-            isHeld = false;
+            _key = key;
+            _isHeld = false;
         }
 
-        public bool IsPressed { get { return isPressed(); } }
-
-        public static void Update() { state = Keyboard.GetState(); }
-
-        private Keys key;
-        private bool isHeld;
-        private static KeyboardState state;
-        private bool isPressed()
+        public bool IsPressed
         {
-            if (state.IsKeyDown(key))
+            get
             {
-                if (isHeld) return false;
+
+                if (_state.IsKeyDown(_key))
+                {
+                    if (_isHeld) return false;
+                    else
+                    {
+                        _isHeld = true;
+                        return true;
+                    }
+                }
                 else
                 {
-                    isHeld = true;
-                    return true;
+                    if (_isHeld) _isHeld = false;
+                    return false;
                 }
             }
-            else
-            {
-                if (isHeld) isHeld = false;
-                return false;
-            }
+        }
+
+        public static void Update()
+        {
+            _state = Keyboard.GetState();
         }
     }
 }

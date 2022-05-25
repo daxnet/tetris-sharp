@@ -13,11 +13,14 @@ using TetrisSharp.Sprites;
 using TetrisSharp.Framework.Sounds;
 using Microsoft.Xna.Framework.Audio;
 using TetrisSharp.Framework.Components;
+using TetrisSharp.Framework.Sprites;
 
 namespace TetrisSharp.Scenes
 {
     internal sealed class GameScene : Scene, IGameScene
     {
+        private const string HintTextLine1 = "Left - [A], Right - [D], Down - [S]";
+        private const string HintTextLine2 = "Rotate - [J], Pause - [Enter]";
         private const float KeyDelay = 0.08F;
         private const string LevelTextPattern = "Level: {0}";
         private const string RowsRemovedTextPattern = "Rows removed: {0}";
@@ -25,6 +28,7 @@ namespace TetrisSharp.Scenes
         private static readonly Random _random = new(DateTime.Now.Millisecond);
         private readonly BlockGenerator _blockGenerator = new();
         private readonly GameBoard _gameBoard = new(Constants.NumberOfTilesX, Constants.NumberOfTilesY);
+        private readonly KeyPress _keyEnter = new(Keys.Enter);
         private readonly KeyPress _keyJ = new(Keys.J);
         private readonly Queue<int> _tetrisQueue = new();
         private readonly Texture2D[] _tileTextures = new Texture2D[Constants.TileTextureCount];
@@ -41,6 +45,8 @@ namespace TetrisSharp.Scenes
         private Texture2D _gameBoardTexture;
         private Sound _gameoverSound;
         private SoundEffect _gameoverSoundEffect;
+        private Text _hintTextLine1;
+        private Text _hintTextLine2;
         private bool _isGameOver = false;
         private Text _labelNextBlock;
         private int _level = 1;
@@ -48,6 +54,7 @@ namespace TetrisSharp.Scenes
         private Sound _levelUpSound;
         private SoundEffect _levelUpSoundEffect;
         private Block _nextBlock;
+        private bool _paused = false;
         private Sound _rowRemovingSound;
         private SoundEffect _rowRemovingSoundEffect;
         private int _rowsRemoved;
@@ -56,6 +63,13 @@ namespace TetrisSharp.Scenes
         private float _timeSinceLastKeyPress = 0;
         private int _totalScore;
         private Text _totalScoreText;
+        private Texture2D _pausedTexture;
+        private DumbSprite _pausedSprite;
+
+        /// <summary>
+        /// Initializes a new instance of the <c>GameScene</c> class.
+        /// </summary>
+        /// <param name="game">The game.</param>
         public GameScene(IOvowGame game)
             : base(game)
         {
@@ -106,26 +120,37 @@ namespace TetrisSharp.Scenes
                 CollisionDetective = false
             };
 
-            _rowsRemovedText = new Text(string.Format(RowsRemovedTextPattern, _rowsRemoved), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 5 * 25))
+            _rowsRemovedText = new Text(string.Format(RowsRemovedTextPattern, _rowsRemoved), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 6 * 25))
             {
                 CollisionDetective = false
             };
 
-            _totalScoreText = new Text(string.Format(TotalScoreTextPattern, _totalScore), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 6 * 25))
+            _totalScoreText = new Text(string.Format(TotalScoreTextPattern, _totalScore), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 7 * 25))
             {
                 CollisionDetective = false
             };
 
-            _levelText = new Text(string.Format(LevelTextPattern, _level), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 7 * 25))
+            _levelText = new Text(string.Format(LevelTextPattern, _level), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, 8 * 25))
             {
                 CollisionDetective = false
             };
 
+            _hintTextLine1 = new Text(HintTextLine1, this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, Constants.NumberOfTilesY * 25 - 25 * 3))
+            {
+                CollisionDetective = false
+            };
+
+            _hintTextLine2 = new Text(HintTextLine2, this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, Constants.NumberOfTilesY * 25 - 25 * 2))
+            {
+                CollisionDetective = false
+            };
 
             Add(_labelNextBlock);
             Add(_rowsRemovedText);
             Add(_totalScoreText);
             Add(_levelText);
+            Add(_hintTextLine1);
+            Add(_hintTextLine2);
 
             _gameBoardTexture = new Texture2D(Game.GraphicsDevice, 25 * Constants.NumberOfTilesX, 25 * Constants.NumberOfTilesY);
             var gameBoardColorData = new Color[25 * Constants.NumberOfTilesX * 25 * Constants.NumberOfTilesY];
@@ -168,12 +193,40 @@ namespace TetrisSharp.Scenes
             _tetrisQueue.Enqueue(_random.Next(_blockGenerator.BlockDefinitions.Definitions.Count));
             _tetrisQueue.Enqueue(_random.Next(_blockGenerator.BlockDefinitions.Definitions.Count));
 
+            _pausedTexture = contentManager.Load<Texture2D>($"textures\\paused");
+            _pausedSprite = new DumbSprite(this, _pausedTexture, new Vector2(10, 60))
+            {
+                Visible = false,
+                Layer = 5
+            };
+
+            Add(_pausedSprite);
+
             AddBlockToBoard();
         }
 
         public override void Update(GameTime gameTime)
         {
             KeyPress.Update();
+
+            if (_keyEnter.IsPressed)
+            {
+                _paused = !_paused;
+            }
+
+            if (_paused)
+            {
+                _pausedSprite.Visible = true;
+                if (_bgm.State != SoundState.Paused)
+                    _bgm.Pause();
+                return;
+            }
+            else
+            {
+                _pausedSprite.Visible = false;
+                if (_bgm.State != SoundState.Playing)
+                    _bgm.Resume();
+            }
 
             base.Update(gameTime);
 
@@ -269,7 +322,7 @@ namespace TetrisSharp.Scenes
             Add(_block);
 
             var nextIndex = _tetrisQueue.Peek();
-            _nextBlock = _blockGenerator.CreateBlock(this, _tileTextures, nextIndex, Constants.NumberOfTilesX + 1, 2);
+            _nextBlock = _blockGenerator.CreateBlock(this, _tileTextures, nextIndex, Constants.NumberOfTilesX + 3, 2);
             Add(_nextBlock);
 
             if (_block.CollisionsWithBoard())

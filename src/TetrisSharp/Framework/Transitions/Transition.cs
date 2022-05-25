@@ -35,6 +35,8 @@ namespace TetrisSharp.Framework.Transitions
 
         public bool CollisionDetective => false;
 
+        public int Layer { get; set; } = 0;
+
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         { }
 

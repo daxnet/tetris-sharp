@@ -53,14 +53,13 @@ namespace TetrisSharp.Sprites
                     return false;
                 }
 
-                for (var x = 0; x < CurrentRotation.Width; x++)
+                for (var y = 0; y < CurrentRotation.Height; y++)
                 {
-                    for (var y = 0; y < CurrentRotation.Height; y++)
+                    if (_x > 0 && 
+                        CurrentRotation.Matrix[0, y] == 1 && 
+                        _gameScene.GameBoard.BoardMatrix[_x - 1, _y + y] == 1)
                     {
-                        if (_x > 0 && _gameScene.GameBoard.BoardMatrix[_x + x - 1, _y + y] == 1)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
 
@@ -77,14 +76,13 @@ namespace TetrisSharp.Sprites
                     return false;
                 }
 
-                for (var x = CurrentRotation.Width - 1; x >= 0; x--)
+                for (var y = 0; y < CurrentRotation.Height; y++)
                 {
-                    for (var y = 0; y < CurrentRotation.Height; y++)
+                    if (_x < Constants.NumberOfTilesX - 1 && 
+                        CurrentRotation.Matrix[CurrentRotation.Width - 1, y] == 1 &&
+                        _gameScene.GameBoard.BoardMatrix[_x + CurrentRotation.Width, _y + y] == 1)
                     {
-                        if (_x < Constants.NumberOfTilesX - 1 && _gameScene.GameBoard.BoardMatrix[_x + x + 1, _y + y] == 1)
-                        {
-                            return false;
-                        }
+                        return false;
                     }
                 }
 

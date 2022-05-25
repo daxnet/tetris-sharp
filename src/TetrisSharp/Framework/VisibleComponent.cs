@@ -78,6 +78,9 @@ namespace TetrisSharp.Framework
         public virtual float X { get; set; }
 
         public virtual float Y { get; set; }
+
+        public virtual int Layer { get; set; } = 0;
+
         protected IScene Scene { get; }
 
         public void Draw(GameTime gameTime, SpriteBatch spriteBatch)

@@ -16,11 +16,10 @@ namespace TetrisSharp.Framework.Scenes
         #region Private Fields
 
         private static readonly object endingSyncLock = new object();
+        private static readonly object lockRoot = new object();
         private readonly List<IComponent> gameComponents = new List<IComponent>();
         private volatile bool ended = false;
         private volatile bool ending = false;
-        private static readonly object lockRoot = new object();
-
         #endregion Private Fields
 
         #region Protected Constructors
@@ -102,6 +101,10 @@ namespace TetrisSharp.Framework.Scenes
 
         #region Public Methods
 
+        public virtual int Layer { get; set; } = 0;
+
+        protected virtual string NextSceneName { get; set; }
+
         public void Add(IComponent item)
         {
             lock (lockRoot)
@@ -117,9 +120,6 @@ namespace TetrisSharp.Framework.Scenes
                 gameComponents.Clear();
             }
         }
-
-        protected virtual string NextSceneName { get; set; }
-
         public bool Contains(IComponent item) => gameComponents.Contains(item);
 
         public void CopyTo(IComponent[] array, int arrayIndex) => gameComponents.CopyTo(array, arrayIndex);
@@ -140,6 +140,7 @@ namespace TetrisSharp.Framework.Scenes
                 gameComponents
                     .Where(c => c is IVisibleComponent)
                     .Select(c => c as IVisibleComponent)
+                    .OrderBy(c => c.Layer)
                     .ToList()
                     .ForEach(vc => vc.Draw(gameTime, spriteBatch));
             }
@@ -148,12 +149,6 @@ namespace TetrisSharp.Framework.Scenes
             {
                 this.Out.Draw(gameTime, spriteBatch);
             }
-        }
-
-        public void EndTo(string sceneName)
-        {
-            NextSceneName = sceneName;
-            End();
         }
 
         public virtual void End()
@@ -174,6 +169,11 @@ namespace TetrisSharp.Framework.Scenes
             }
         }
 
+        public void EndTo(string sceneName)
+        {
+            NextSceneName = sceneName;
+            End();
+        }
         public virtual void Enter() { }
 
         public bool Equals(IComponent other)
