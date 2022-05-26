@@ -28,6 +28,10 @@ dotnet publish -c Release -o published -r win-x64
 - Moving down: <kbd>S</kbd>
 - Rotate block: <kbd>J</kbd>
 - Pause: <kbd>Enter</kbd>
+- Turn BGM On or Off: <kbd>F12</kbd>
+
+## Customize Blocks
+Tetris Sharp allows players to customize the blocks used by the game. Open the `blocks.xml` in a text editor and customize the blocks there.
 
 ## About BGM
 The background music was from the artist [GMRemix](https://music.163.com/#/artist?id=29811373). No commercial use.

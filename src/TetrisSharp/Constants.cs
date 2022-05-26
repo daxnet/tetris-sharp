@@ -11,5 +11,7 @@ namespace TetrisSharp
         public const int NumberOfTilesY = 24;
         public const int ScoreBoardWidth = 255;
         public const int RowsForLevelUp = 30;
+        public const float BgmVolume = 0.2F;
+        public const float SoundVolume = 0.1F;
     }
 }

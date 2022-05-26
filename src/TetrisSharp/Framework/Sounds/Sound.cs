@@ -31,11 +31,10 @@ namespace TetrisSharp.Framework.Sounds
     {
         #region Private Fields
 
+        private static readonly object lockObj = new object();
         private readonly SoundEffect soundEffect;
         private readonly float volume;
         private SoundEffectInstance soundEffectInstance;
-        private static readonly object lockObj = new object();
-
         #endregion Private Fields
 
         #region Public Constructors
@@ -55,6 +54,19 @@ namespace TetrisSharp.Framework.Sounds
 
         #region Public Methods
 
+        public SoundState State
+        {
+            get
+            {
+                if (soundEffectInstance != null && !soundEffectInstance.IsDisposed)
+                {
+                    return soundEffectInstance.State;
+                }
+
+                return SoundState.Stopped;
+            }
+        }
+
         /// <summary>
         /// Plays the sound.
         /// </summary>
@@ -69,20 +81,6 @@ namespace TetrisSharp.Framework.Sounds
                 soundEffectInstance.Play();
             }
         }
-
-        public SoundState State
-        {
-            get
-            {
-                if (soundEffectInstance != null && !soundEffectInstance.IsDisposed)
-                {
-                    return soundEffectInstance.State;
-                }
-
-                return SoundState.Stopped;
-            }
-        }
-
         /// <summary>
         /// Stops playing the sound.
         /// </summary>

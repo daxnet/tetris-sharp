@@ -35,14 +35,13 @@ namespace TetrisSharp.Framework.Sounds
         #region Private Fields
 
         private readonly SoundEffect[] musicEffects;
+        private readonly TimeSpan soundStatusCheckInterval = TimeSpan.FromSeconds(5);
         private readonly float volume;
         private int currentIndex = 0;
+        private TimeSpan elapsedGameTime;
         private bool looped;
         private SoundEffectInstance musicEffectInstance;
         private bool stopped = true;
-        private readonly TimeSpan soundStatusCheckInterval = TimeSpan.FromSeconds(5);
-        private TimeSpan elapsedGameTime;
-
         #endregion Private Fields
 
         #region Public Constructors
@@ -112,6 +111,50 @@ namespace TetrisSharp.Framework.Sounds
 
         #region Private Methods
 
+        public SoundState State
+        {
+            get
+            {
+                if (musicEffectInstance != null && !musicEffectInstance.IsDisposed)
+                {
+                    return musicEffectInstance.State;
+                }
+
+                return SoundState.Stopped;
+            }
+        }
+
+        public float Volume
+        {
+            get
+            {
+                return musicEffectInstance.Volume;
+            }
+            set
+            {
+                if (!musicEffectInstance.IsDisposed)
+                {
+                    musicEffectInstance.Volume = value;
+                }
+            }
+        }
+
+        public void Pause()
+        {
+            if (!musicEffectInstance.IsDisposed)
+            {
+                musicEffectInstance.Pause();
+            }
+        }
+
+        public void Resume()
+        {
+            if (!musicEffectInstance.IsDisposed)
+            {
+                musicEffectInstance.Resume();
+            }
+        }
+
         private void Play(int index)
         {
             Stop(false);
@@ -120,7 +163,6 @@ namespace TetrisSharp.Framework.Sounds
             musicEffectInstance.Volume = this.volume;
             musicEffectInstance.Play();
         }
-
         private void Stop(bool stopAll)
         {
             if (musicEffectInstance != null &&
@@ -136,30 +178,6 @@ namespace TetrisSharp.Framework.Sounds
                 currentIndex = 0;
             }
         }
-
-        public SoundState State
-        {
-            get
-            {
-                if (musicEffectInstance != null && !musicEffectInstance.IsDisposed)
-                {
-                    return musicEffectInstance.State;
-                }
-
-                return SoundState.Stopped;
-            }
-        }
-
-        public void Pause()
-        {
-            musicEffectInstance.Pause();
-        }
-
-        public void Resume()
-        {
-            musicEffectInstance.Resume();
-        }
-
         #endregion Private Methods
     }
 }

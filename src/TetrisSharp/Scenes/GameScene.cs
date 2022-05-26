@@ -21,6 +21,7 @@ namespace TetrisSharp.Scenes
     {
         private const string HintTextLine1 = "Left - [A], Right - [D], Down - [S]";
         private const string HintTextLine2 = "Rotate - [J], Pause - [Enter]";
+        private const string HintTextLine3 = "BGM: {0} [F12]";
         private const float KeyDelay = 0.08F;
         private const string LevelTextPattern = "Level: {0}";
         private const string RowsRemovedTextPattern = "Rows removed: {0}";
@@ -29,9 +30,11 @@ namespace TetrisSharp.Scenes
         private readonly BlockGenerator _blockGenerator = new();
         private readonly GameBoard _gameBoard = new(Constants.NumberOfTilesX, Constants.NumberOfTilesY);
         private readonly KeyPress _keyEnter = new(Keys.Enter);
+        private readonly KeyPress _keyF12 = new(Keys.F12);
         private readonly KeyPress _keyJ = new(Keys.J);
         private readonly Queue<int> _tetrisQueue = new();
         private readonly Texture2D[] _tileTextures = new Texture2D[Constants.TileTextureCount];
+        private bool _allowBgm = true;
         private BackgroundMusic _bgm;
         private SoundEffect _bgmEffect;
         private Block _block;
@@ -47,6 +50,7 @@ namespace TetrisSharp.Scenes
         private SoundEffect _gameoverSoundEffect;
         private Text _hintTextLine1;
         private Text _hintTextLine2;
+        private Text _hintTextLine3;
         private bool _isGameOver = false;
         private Text _labelNextBlock;
         private int _level = 1;
@@ -55,6 +59,8 @@ namespace TetrisSharp.Scenes
         private SoundEffect _levelUpSoundEffect;
         private Block _nextBlock;
         private bool _paused = false;
+        private DumbSprite _pausedSprite;
+        private Texture2D _pausedTexture;
         private Sound _rowRemovingSound;
         private SoundEffect _rowRemovingSoundEffect;
         private int _rowsRemoved;
@@ -63,9 +69,6 @@ namespace TetrisSharp.Scenes
         private float _timeSinceLastKeyPress = 0;
         private int _totalScore;
         private Text _totalScoreText;
-        private Texture2D _pausedTexture;
-        private DumbSprite _pausedSprite;
-
         /// <summary>
         /// Initializes a new instance of the <c>GameScene</c> class.
         /// </summary>
@@ -145,12 +148,18 @@ namespace TetrisSharp.Scenes
                 CollisionDetective = false
             };
 
+            _hintTextLine3 = new Text(string.Format(HintTextLine3, _allowBgm ? "On" : "Off"), this, _font, Color.LightYellow, new Vector2(25 * Constants.NumberOfTilesX + 5, Constants.NumberOfTilesY * 25 - 25))
+            {
+                CollisionDetective = false
+            };
+
             Add(_labelNextBlock);
             Add(_rowsRemovedText);
             Add(_totalScoreText);
             Add(_levelText);
             Add(_hintTextLine1);
             Add(_hintTextLine2);
+            Add(_hintTextLine3);
 
             _gameBoardTexture = new Texture2D(Game.GraphicsDevice, 25 * Constants.NumberOfTilesX, 25 * Constants.NumberOfTilesY);
             var gameBoardColorData = new Color[25 * Constants.NumberOfTilesX * 25 * Constants.NumberOfTilesY];
@@ -170,16 +179,16 @@ namespace TetrisSharp.Scenes
             Add(_bgm);
 
             _rowRemovingSoundEffect = contentManager.Load<SoundEffect>("sounds\\remove_row");
-            _rowRemovingSound = new(_rowRemovingSoundEffect, 0.1F);
+            _rowRemovingSound = new(_rowRemovingSoundEffect, Constants.SoundVolume);
 
             _collisionSoundEffect = contentManager.Load<SoundEffect>("sounds\\merge");
-            _collisionSound = new(_collisionSoundEffect, 0.1F);
+            _collisionSound = new(_collisionSoundEffect, Constants.SoundVolume);
 
             _gameoverSoundEffect = contentManager.Load<SoundEffect>("sounds\\gameover");
-            _gameoverSound = new(_gameoverSoundEffect, 0.1F);
+            _gameoverSound = new(_gameoverSoundEffect, Constants.SoundVolume);
 
             _levelUpSoundEffect = contentManager.Load<SoundEffect>("sounds\\levelup");
-            _levelUpSound = new(_levelUpSoundEffect, 0.1F);
+            _levelUpSound = new(_levelUpSoundEffect, Constants.SoundVolume);
 
             _blockGenerator.LoadFromFile("blocks.xml");
             for (var i = 0; i < Constants.TileTextureCount; i++)
@@ -209,23 +218,23 @@ namespace TetrisSharp.Scenes
         {
             KeyPress.Update();
 
+            if (_keyF12.IsPressed)
+            {
+                _allowBgm = !_allowBgm;
+                _hintTextLine3.Value = string.Format(HintTextLine3, _allowBgm ? "On" : "Off");
+            }
+
             if (_keyEnter.IsPressed)
             {
                 _paused = !_paused;
             }
 
+            _pausedSprite.Visible = _paused;
+            ToggleBgm(_allowBgm && !_paused);
+
             if (_paused)
             {
-                _pausedSprite.Visible = true;
-                if (_bgm.State != SoundState.Paused)
-                    _bgm.Pause();
                 return;
-            }
-            else
-            {
-                _pausedSprite.Visible = false;
-                if (_bgm.State != SoundState.Playing)
-                    _bgm.Resume();
             }
 
             base.Update(gameTime);
@@ -274,11 +283,6 @@ namespace TetrisSharp.Scenes
             _rowsRemovedText.Value = string.Format(RowsRemovedTextPattern, _rowsRemoved);
             _totalScoreText.Value = string.Format(TotalScoreTextPattern, _totalScore);
             _levelText.Value = string.Format(LevelTextPattern, _level);
-
-            if (_levelUpSound.State == SoundState.Stopped && _bgm.State == SoundState.Paused)
-            {
-                _bgm.Resume();
-            }
         }
 
         protected override void Dispose(bool disposing)
@@ -334,6 +338,7 @@ namespace TetrisSharp.Scenes
 
             _tetrisQueue.Enqueue(_random.Next(_blockGenerator.BlockDefinitions.Definitions.Count));
         }
+
         private void CheckCollision()
         {
             if (_block.CollisionsWithBoard())
@@ -379,6 +384,23 @@ namespace TetrisSharp.Scenes
                 Remove(_block);
 
                 AddBlockToBoard();
+            }
+        }
+
+        private void ToggleBgm(bool shouldPlay)
+        {
+            if (shouldPlay && _bgm.State == SoundState.Playing)
+            {
+                return;
+            }
+
+            if (shouldPlay && _bgm.State != SoundState.Playing && _levelUpSound.State == SoundState.Stopped)
+            {
+                _bgm.Resume();
+            }
+            else if (_bgm.State != SoundState.Paused)
+            {
+                _bgm.Pause();
             }
         }
     }
