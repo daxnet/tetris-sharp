@@ -11,12 +11,10 @@
 		<ApplicationIcon>Icon.ico</ApplicationIcon>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Remove="Icon.ico" />
-		<None Remove="Icon.bmp" />
+	  <None Remove="icon.bmp" />
 	</ItemGroup>
 	<ItemGroup>
-		<EmbeddedResource Include="Icon.ico" />
-		<EmbeddedResource Include="Icon.bmp" />
+	  <EmbeddedResource Include="Icon.bmp" />
 	</ItemGroup>
 	<ItemGroup>
 		<MonoGameContentReference Include="Content\Content.mgcb" />
