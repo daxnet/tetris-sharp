@@ -173,7 +173,7 @@ namespace TetrisSharp.Scenes
                 scoreBoardColorData[i] = Color.Gray;
             _scoreBoardTexture.SetData(scoreBoardColorData);
 
-            _bgmEffect = contentManager.Load<SoundEffect>("sounds\\bgm");
+            _bgmEffect = contentManager.Load<SoundEffect>("sounds\\bgm2");
             _bgm = new(new[] { _bgmEffect }, 0.2F);
 
             Add(_bgm);
