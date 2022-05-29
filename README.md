@@ -6,9 +6,12 @@ A Tetris game made with CSharp and MonoGame
 ## Screenshot
 ![Tetris Sharp](img/screenshot.png)
 
+## Download
+Click [Here](https://daxnetstorageaccount.blob.core.windows.net/artifacts/TetrisSharp_dev.zip) to download the executables. After download, extract all files from ZIP and double click `TetrisSharp.exe` to play.
+
 ## Prerequisites
-- For development: Microsoft Visual Studio 2019 with .NET Core 3.1 or .NET 5
-- For build: .NET Core 3.1, .NET 5 or .NET 6
+- For development: Microsoft Visual Studio 2019 with .NET Core 3.1
+- For build: .NET Core 3.1
 
 ## Build
 ```shell
@@ -34,4 +37,4 @@ dotnet publish -c Release -o published -r win-x64
 Tetris Sharp allows players to customize the blocks used by the game. Open the `blocks.xml` in a text editor and customize the blocks there.
 
 ## About BGM
-The background music was from the artist [GMRemix](https://music.163.com/#/artist?id=29811373). No commercial use.
+The BGM was from [here](https://y.qq.com/n/ryqq/songDetail/0030syAa49gxCJ), no commercial use.
