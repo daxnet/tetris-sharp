@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="Build.props" />
+  <PropertyGroup>
+    <AssemblyVersion>$(TetrisAssemblyVersion)</AssemblyVersion>
+    <FileVersion>$(TetrisAssemblyFileVersion)</FileVersion>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+</Project>

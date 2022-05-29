@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <TetrisPackageVersion>0.999.0-dev</TetrisPackageVersion>
+    <TetrisAssemblyVersion>0.999.0.0</TetrisAssemblyVersion>
+    <TetrisAssemblyFileVersion>0.999.0.0</TetrisAssemblyFileVersion>
+  </PropertyGroup>
+</Project>
