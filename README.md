@@ -7,7 +7,7 @@ A Tetris game made with CSharp and MonoGame
 ![Tetris Sharp](img/screenshot.png)
 
 ## Download
-Click [Here](https://daxnetstorageaccount.blob.core.windows.net/artifacts/TetrisSharp_dev.zip) to download the executables. After download, extract all files from ZIP and double click `TetrisSharp.exe` to play.
+Click [Here](https://sunnycodingstorage.blob.core.windows.net/public/TetrisSharp_dev.zip) to download the executables. After download, extract all files from ZIP and double click `TetrisSharp.exe` to play.
 
 ## Prerequisites
 - For development: Microsoft Visual Studio 2019 with .NET Core 3.1
